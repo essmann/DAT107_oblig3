@@ -1,16 +1,16 @@
 package org.example;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Entity
-@Table(name = "ansatt")
+@Table(name = "ansatt", schema = "innlevering_jpa")
 public class Ansatt {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
     private String brukernavn;
     private String fornavn;
     private String etternavn;
@@ -65,5 +65,11 @@ public class Ansatt {
 
     public void setBrukernavn(String brukernavn) {
         this.brukernavn = brukernavn;
+    }
+
+    @Override
+    public String toString() {
+        String str = "Brukernavn: %s Fornavn %s Etternavn %s Månedslønn %s Stilling %s Ansettelsesdato %s";
+        return String.format(str, brukernavn, fornavn, etternavn, maanedslonn, stilling, ansettelsedato);
     }
 }
