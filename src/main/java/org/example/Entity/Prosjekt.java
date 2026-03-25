@@ -1,4 +1,4 @@
-package org.example;
+package org.example.Entity;
 
 import jakarta.persistence.*;
 
@@ -9,12 +9,13 @@ import java.util.List;
 public class Prosjekt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private int prosjekt_id;
     private String navn;
     private String beskrivelse;
 
-    @ManyToMany
-    private List<Ansatt> ansatte;
+    @OneToMany(mappedBy = "prosjekt")
+    private List<ProsjektDeltagelse> deltagelse;
+
 
 
 

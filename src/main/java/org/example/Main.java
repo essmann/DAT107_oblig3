@@ -1,9 +1,10 @@
 package org.example;
 
-import com.sun.codemodel.JForEach;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import org.example.DAO.AnsattDAO;
+import org.example.Entity.Ansatt;
 
 import java.util.List;
 
@@ -18,6 +19,9 @@ public class Main {
         //Lag entity manager
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
+//        AnsattDAO ansattDAO = new AnsattDAO(entityManager);
+
+        AnsattDAO.insertDummyAnsatte(entityManager);
         getAlleAnsatte(entityManager);
 
     }
@@ -28,5 +32,9 @@ public class Main {
         System.out.println(ans.toString());
 
         }
+    }
+
+    private static void leggTilAnsattTilProsjekt(Ansatt ansatt, int prosjektNr){
+
     }
 }
