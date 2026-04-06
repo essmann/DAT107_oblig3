@@ -15,4 +15,17 @@ public class Avdeling {
     @OneToOne
     @JoinColumn(name = "sjef_id")  // denne lager foreign key
     private Ansatt sjef;
+
+    public Ansatt getSjef(){
+        return this.sjef;
+    }
+    @Override
+    public String toString() {
+        return "Avdeling{" +
+                "avdeling_id=" + avdeling_id +
+                ", navn='" + navn + '\'' +
+                ", sjef=" + (sjef != null ? sjef.getAnsatt_id() : "null") +
+                '}';
+    }
+
 }

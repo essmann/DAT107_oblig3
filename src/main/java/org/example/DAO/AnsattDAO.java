@@ -49,11 +49,35 @@ public class AnsattDAO {
         return false;
     }
 
+    public static void oppdaterAnsatt(EntityManager em, Ansatt ansatt) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+            em.merge(ansatt);
+            tx.commit();
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        }
+    }
 
     public static Ansatt finnAnsatt(EntityManager em, int ansattNr){
         try{
             Ansatt ansatt = em.find(Ansatt.class, ansattNr);
             return ansatt;
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+        }
+        return null;
+    }
+    public static List<Ansatt> finnAlleAnsatte(EntityManager em){
+        try{
+            TypedQuery<Ansatt> query = em.createQuery( "SELECT a from Ansatt a", Ansatt.class);
+            return query.getResultList();
         }
         catch(Exception e){
             e.printStackTrace();

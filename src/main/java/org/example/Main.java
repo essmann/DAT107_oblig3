@@ -4,8 +4,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import org.example.DAO.AnsattDAO;
+import org.example.DAO.AvdelingDAO;
 import org.example.DAO.ProsjektDAO;
 import org.example.Entity.Ansatt;
+import org.example.Entity.Avdeling;
 import org.example.Entity.ProsjektDeltagelse;
 
 import java.util.List;
@@ -26,6 +28,11 @@ public class Main {
 //        AnsattDAO.insertDummyAnsatte(entityManager);
 //        getAlleAnsatte(entityManager);
 
+        List<Ansatt> liste = AnsattDAO.finnAlleAnsatte(entityManager);
+        System.out.println("Fetching all ansatte..");
+        for(Ansatt ansatt : liste){
+            System.out.println(ansatt);
+        }
         var ansatt = AnsattDAO.finnAnsatt(entityManager, 1);
 
         System.out.println(ansatt);
@@ -36,6 +43,11 @@ public class Main {
 
         Ansatt ansatt2 = AnsattDAO.finnAnsattFraBrukernavn(entityManager, "CD34");
         System.out.println(ansatt2);
+
+        Avdeling avdeling = AvdelingDAO.finnAvdelingMedId(entityManager, 2);
+        System.out.println(avdeling);
+        System.out.println(avdeling.getSjef());
+
     }
 
     private static void getAlleAnsatte(EntityManager entityManager) {
