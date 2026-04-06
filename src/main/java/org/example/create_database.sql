@@ -34,14 +34,15 @@ CREATE TABLE prosjekt
 -- REDIGERER TABELLEN PGA CIRCULAR DEPENDENCY ellers
 ALTER TABLE avdeling
     ADD CONSTRAINT fk_sjef
-        FOREIGN KEY (sjef_id) REFERENCES ansatt(ansatt_id);
+        FOREIGN KEY (sjef_id) REFERENCES ansatt(ansatt_id) ON DELETE SET NULL;
 --koblingstabell for prosjekt og medlemmer
 CREATE TABLE prosjekt_medlemmer
 (
 
-    ansatt_id    int REFERENCES ansatt (ansatt_id),
-    prosjekt_id  int REFERENCES prosjekt (prosjekt_id),
-    er_aktiv     BOOLEAN DEFAULT TRUE,
+    ansatt_id int REFERENCES ansatt(ansatt_id) ON DELETE CASCADE,
+    prosjekt_id int REFERENCES prosjekt(prosjekt_id) ON DELETE CASCADE,
+
+        er_aktiv     BOOLEAN DEFAULT TRUE,
     antall_timer int     DEFAULT 0,
     rolle        VARCHAR(50),
     PRIMARY KEY (ansatt_id, prosjekt_id)

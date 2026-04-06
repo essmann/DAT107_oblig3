@@ -96,9 +96,19 @@ public class Ansatt {
 
     @Override
     public String toString() {
-        String str = "Brukernavn: %s Fornavn %s Etternavn %s Månedslønn %s Stilling %s Ansettelsesdato %s";
-        return String.format(str, brukernavn, fornavn, etternavn, maanedslonn, stilling, ansettelsedato);
+        return "Ansatt {" +
+                "\n  Ansatt ID: " + ansatt_id +
+                "\n  Brukernavn: " + brukernavn +
+                "\n  Fornavn: " + fornavn +
+                "\n  Etternavn: " + etternavn +
+                "\n  Stilling: " + stilling +
+                "\n  Månedslønn: " + maanedslonn +
+                "\n  Ansettelsesdato: " + ansettelsedato +
+                "\n  Avdeling ID: " + avdeling_id +
+                "\n  Prosjektdeltagelser: " + (prosjektDeltagelse != null ? prosjektDeltagelse.size() : 0) +
+                "\n}";
     }
+
 
     public Integer getAvdeling_id() {
         return avdeling_id;

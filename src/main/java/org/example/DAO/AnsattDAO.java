@@ -18,30 +18,39 @@ public class AnsattDAO {
         this.em = em;
     }
 
-    public void leggTilAnsatt(Ansatt ansatt) {
-        try{
-            if(ansatt.getAvdeling_id() == null){
-                throw new IllegalArgumentException("Ansatt har ikke en avdelingds id. Kan ikke legge til ansatt.");
-            }
-            EntityTransaction tx = em.getTransaction();
-            tx.begin(); // start transaction
+    public boolean erSjef(int ansattNr) {
+        try {
+            Long count = em.createQuery(
+                            "select count(p) from Avdeling p where p.sjef.ansatt_id = :ansattNr",
+                            Long.class)
+                    .setParameter("ansattNr", ansattNr)
+                    .getSingleResult();
 
-
-
-            em.persist(ansatt);
-
-            tx.commit(); // commit to DB
-
-        }
-        catch(Exception e){
-
+            return count > 0;
+        } catch (Exception e) {
             e.printStackTrace();
-
-        }
-        finally{
-
+            return false;
         }
     }
+
+    public void leggTilAnsatt(Ansatt ansatt) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            if (ansatt.getAvdeling_id() == 0) {
+                throw new IllegalArgumentException("Ansatt har ikke en avdeling id.");
+            }
+
+            tx.begin();
+            em.persist(ansatt);
+            tx.commit();
+
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback(); // IMPORTANT
+            e.printStackTrace();
+        }
+    }
+
     public static void insertDummyAnsatt(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
@@ -83,13 +92,40 @@ public class AnsattDAO {
 
         try {
             tx.begin();
-            em.merge(ansatt);
+
+            // Hent eksisterende ansatt fra DB
+            Ansatt eksisterende = em.find(Ansatt.class, ansatt.getAnsatt_id());
+            if (eksisterende == null) {
+                throw new IllegalArgumentException("Ansatt finnes ikke");
+            }
+
+            // Sjekk om ansatt er sjef i en avdeling
+            Long sjefCount = em.createQuery(
+                            "SELECT COUNT(a) FROM Avdeling a WHERE a.sjef.ansatt_id = :ansattId", Long.class)
+                    .setParameter("ansattId", eksisterende.getAnsatt_id())
+                    .getSingleResult();
+
+            // Hvis prøver å endre avdeling og er sjef → kast feil
+            if (sjefCount > 0 && eksisterende.getAvdeling_id() != ansatt.getAvdeling_id()) {
+                throw new IllegalStateException("Kan ikke endre avdeling for en sjef.");
+            }
+
+            // Oppdater kun felt som er tillatt
+            eksisterende.setFornavn(ansatt.getFornavn());
+            eksisterende.setEtternavn(ansatt.getEtternavn());
+            eksisterende.setBrukernavn(ansatt.getBrukernavn());
+            eksisterende.setStilling(ansatt.getStilling());
+            eksisterende.setMaanedslonn(ansatt.getMaanedslonn());
+            eksisterende.setAnsettelsedato(ansatt.getAnsettelsedato());
+            eksisterende.setAvdeling_id(ansatt.getAvdeling_id()); // trykket her er OK hvis ikke sjef
+
             tx.commit();
         } catch (Exception e) {
             if (tx.isActive()) tx.rollback();
             throw e;
         }
     }
+
 
     public static Ansatt finnAnsatt(EntityManager em, int ansattNr){
         try{

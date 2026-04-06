@@ -28,33 +28,47 @@ public class Main {
 //        AnsattDAO.insertDummyAnsatte(entityManager);
 //        getAlleAnsatte(entityManager);
 
+
+        //Finner alle ansatte !!!!
         List<Ansatt> liste = AnsattDAO.finnAlleAnsatte(entityManager);
         System.out.println("Fetching all ansatte..");
-        for(Ansatt ansatt : liste){
+        for (Ansatt ansatt : liste) {
             System.out.println(ansatt);
         }
-        var ansatt = AnsattDAO.finnAnsatt(entityManager, 1);
 
-        System.out.println(ansatt);
+        //Finner alle ansatte i en avdeling !!!!
+
+//        Avdeling avdeling = AvdelingDAO.finnAvdelingMedId(entityManager, 2);
+//        System.out.println(avdeling);
+//        System.out.println("Finner alle ansatte i avdelingen...");
+//        List<Ansatt> ansatte = AvdelingDAO.finnAlleAnsatte(entityManager, 2);
+//        for (Ansatt ans : ansatte) {
+//            System.out.println(ans);
+//        }
+
+        AvdelingDAO.printAnsatteWithHighlightedBoss(entityManager, 2);
 //
 //        ProsjektDeltagelse deltagelse = ProsjektDAO.leggTilAnsattTilProsjekt(entityManager, 1, 1);
 //
 //        System.out.println(deltagelse);
 
-        Ansatt ansatt2 = AnsattDAO.finnAnsattFraBrukernavn(entityManager, "CD34");
-        System.out.println(ansatt2);
-
-        Avdeling avdeling = AvdelingDAO.finnAvdelingMedId(entityManager, 2);
-        System.out.println(avdeling);
-        System.out.println(avdeling.getSjef());
+//        Ansatt testS = AnsattDAO.finnAnsatt(entityManager, 5);
+//         testS.setAvdeling_id(4);
+//        AnsattDAO.oppdaterAnsatt(entityManager, testS);
+//        Ansatt ansatt2 = AnsattDAO.finnAnsattFraBrukernavn(entityManager, "CD34");
+//        System.out.println(ansatt2);
+//
+//        Avdeling avdeling = AvdelingDAO.finnAvdelingMedId(entityManager, 2);
+//        System.out.println(avdeling);
+//        System.out.println(avdeling.getSjef());
 
 //        AnsattDAO.insertDummyAnsatt(entityManager);
 
-        System.out.println("Finner alle ansatte i avdelingen...");
-        List<Ansatt> ansatte = AvdelingDAO.finnAlleAnsatte(entityManager, 1);
-        for(Ansatt ans : ansatte ){
-            System.out.println(ans);
-        }
+//        System.out.println("Finner alle ansatte i avdelingen...");
+//        List<Ansatt> ansatte = AvdelingDAO.finnAlleAnsatte(entityManager, 1);
+//        for(Ansatt ans : ansatte ){
+//            System.out.println(ans);
+//        }
 
 
     }
@@ -62,13 +76,13 @@ public class Main {
 
     private static void getAlleAnsatte(EntityManager entityManager) {
         List<Ansatt> ansatte = entityManager.createQuery("SELECT p from Ansatt p", Ansatt.class).getResultList();
-        for(Ansatt ans : ansatte){
-        System.out.println(ans.toString());
+        for (Ansatt ans : ansatte) {
+            System.out.println(ans.toString());
 
         }
     }
 
-    private static void leggTilAnsattTilProsjekt(Ansatt ansatt, int prosjektNr){
+    private static void leggTilAnsattTilProsjekt(Ansatt ansatt, int prosjektNr) {
 
     }
 

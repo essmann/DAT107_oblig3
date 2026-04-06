@@ -12,6 +12,14 @@ public class Avdeling {
 
     private String navn;
 
+    public String getNavn() {
+        return navn;
+    }
+
+    public void setNavn(String navn) {
+        this.navn = navn;
+    }
+
     @OneToOne
     @JoinColumn(name = "sjef_id")  // denne lager foreign key
     private Ansatt sjef;
