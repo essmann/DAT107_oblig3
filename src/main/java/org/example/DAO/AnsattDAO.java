@@ -1,11 +1,15 @@
 package org.example.DAO;
 
+import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.TypedQuery;
 import org.example.Entity.Ansatt;
+import org.example.Entity.ProsjektDeltagelse;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 public class AnsattDAO {
     private EntityManager em;
@@ -24,18 +28,78 @@ public class AnsattDAO {
 
             tx.commit(); // commit to DB
 
-            em.close();
         }
         catch(Exception e){
             e.printStackTrace();
 
         }
         finally{
-            em.close();
 
         }
     }
+    private static boolean harProsjektTimer(Ansatt ansatt){
+        List<ProsjektDeltagelse> deltagelse = ansatt.getProsjektDeltagelse();
 
+        for (ProsjektDeltagelse p : deltagelse) {
+            int timer = p.getAntall_timer();
+            if(timer>0){
+                    return true;
+            }
+        }
+        return false;
+    }
+
+
+    public static Ansatt finnAnsatt(EntityManager em, int ansattNr){
+        try{
+            Ansatt ansatt = em.find(Ansatt.class, ansattNr);
+            return ansatt;
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+        }
+        return null;
+    }
+    public static Ansatt finnAnsattFraBrukernavn(EntityManager em, String brukernavn){
+        try{
+            TypedQuery<Ansatt> query = em.createQuery(
+                    "SELECT p FROM Ansatt p WHERE p.brukernavn = :ansatt",
+                    Ansatt.class
+            );
+
+            query.setParameter("ansatt", brukernavn);
+            Ansatt ansatt = query.getSingleResult();
+            return ansatt;
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        finally{
+        }
+        return null;
+    }
+
+    public static Ansatt slettAnsatt(EntityManager em, int ansattNr){
+            Ansatt ansatt = em.find(Ansatt.class, ansattNr);
+            if(ansatt == null) throw new IllegalArgumentException("Ansatt med id: " + ansattNr + " ikke funnet");
+            if(harProsjektTimer(ansatt)){
+                throw new IllegalStateException("Kan ikke slette ansatt fordi den har timer jobbet i et prosjekt.");
+
+            }
+        try {
+            em.getTransaction().begin();
+            em.remove(ansatt); // <-- Dette sletter faktisk raden!
+            em.getTransaction().commit();
+            return ansatt;
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback(); // Ruller tilbake hvis noe krasjer i DB
+            }
+            throw e; // Kaster feilen videre så vi vet at DB-slettingen feilet
+        }
+}
     public static void insertDummyAnsatte(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
         tx.begin();

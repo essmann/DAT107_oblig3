@@ -3,6 +3,7 @@ package org.example.Entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "avdeling", schema = "innlevering_jpa")
 public class Avdeling {
 
     @Id

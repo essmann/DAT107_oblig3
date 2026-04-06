@@ -4,14 +4,16 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import org.example.DAO.AnsattDAO;
+import org.example.DAO.ProsjektDAO;
 import org.example.Entity.Ansatt;
+import org.example.Entity.ProsjektDeltagelse;
 
 import java.util.List;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
-    static void main() {
+    static void main(String[] args) {
 
         EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("Oblig3");
 
@@ -21,9 +23,19 @@ public class Main {
 
 //        AnsattDAO ansattDAO = new AnsattDAO(entityManager);
 
-        AnsattDAO.insertDummyAnsatte(entityManager);
-        getAlleAnsatte(entityManager);
+//        AnsattDAO.insertDummyAnsatte(entityManager);
+//        getAlleAnsatte(entityManager);
 
+        var ansatt = AnsattDAO.finnAnsatt(entityManager, 1);
+
+        System.out.println(ansatt);
+//
+//        ProsjektDeltagelse deltagelse = ProsjektDAO.leggTilAnsattTilProsjekt(entityManager, 1, 1);
+//
+//        System.out.println(deltagelse);
+
+        Ansatt ansatt2 = AnsattDAO.finnAnsattFraBrukernavn(entityManager, "CD34");
+        System.out.println(ansatt2);
     }
 
     private static void getAlleAnsatte(EntityManager entityManager) {
@@ -37,4 +49,6 @@ public class Main {
     private static void leggTilAnsattTilProsjekt(Ansatt ansatt, int prosjektNr){
 
     }
+
+
 }

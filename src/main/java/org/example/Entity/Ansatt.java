@@ -106,4 +106,20 @@ public class Ansatt {
     public void setAvdeling_id(int avdeling_id) {
         this.avdeling_id = avdeling_id;
     }
+
+    public int getAnsatt_id() {
+        return ansatt_id;
+    }
+
+    public void setAnsatt_id(int ansatt_id) {
+        this.ansatt_id = ansatt_id;
+    }
+
+    public List<ProsjektDeltagelse> getProsjektDeltagelse() {
+        return prosjektDeltagelse;
+    }
+
+    public void setProsjektDeltagelse(List<ProsjektDeltagelse> prosjektDeltagelse) {
+        this.prosjektDeltagelse = prosjektDeltagelse;
+    }
 }
