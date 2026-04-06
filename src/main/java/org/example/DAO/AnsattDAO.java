@@ -20,8 +20,12 @@ public class AnsattDAO {
 
     public void leggTilAnsatt(Ansatt ansatt) {
         try{
+            if(ansatt.getAvdeling_id() == null){
+                throw new IllegalArgumentException("Ansatt har ikke en avdelingds id. Kan ikke legge til ansatt.");
+            }
             EntityTransaction tx = em.getTransaction();
             tx.begin(); // start transaction
+
 
 
             em.persist(ansatt);
@@ -30,11 +34,36 @@ public class AnsattDAO {
 
         }
         catch(Exception e){
+
             e.printStackTrace();
 
         }
         finally{
 
+        }
+    }
+    public static void insertDummyAnsatt(EntityManager em) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            Ansatt a = new Ansatt();
+            a.setBrukernavn("TEST");
+            a.setFornavn("Ola");
+            a.setEtternavn("Nordmann");
+            a.setAnsettelsedato(new Date());
+            a.setStilling("Utvikler");
+            a.setMaanedslonn(new BigDecimal("50000"));
+            a.setAvdeling_id(1); // make sure this exists in DB
+
+            em.persist(a);
+
+            tx.commit();
+            System.out.println("Ansatt inserted!");
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            e.printStackTrace();
         }
     }
     private static boolean harProsjektTimer(Ansatt ansatt){

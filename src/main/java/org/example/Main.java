@@ -48,7 +48,17 @@ public class Main {
         System.out.println(avdeling);
         System.out.println(avdeling.getSjef());
 
+//        AnsattDAO.insertDummyAnsatt(entityManager);
+
+        System.out.println("Finner alle ansatte i avdelingen...");
+        List<Ansatt> ansatte = AvdelingDAO.finnAlleAnsatte(entityManager, 1);
+        for(Ansatt ans : ansatte ){
+            System.out.println(ans);
+        }
+
+
     }
+
 
     private static void getAlleAnsatte(EntityManager entityManager) {
         List<Ansatt> ansatte = entityManager.createQuery("SELECT p from Ansatt p", Ansatt.class).getResultList();

@@ -11,7 +11,8 @@ import java.util.List;
 public class Ansatt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int ansatt_id;
+    private Integer ansatt_id;
+    @Column(unique = true)
     private String brukernavn;
     private String fornavn;
     private String etternavn;
@@ -99,7 +100,7 @@ public class Ansatt {
         return String.format(str, brukernavn, fornavn, etternavn, maanedslonn, stilling, ansettelsedato);
     }
 
-    public int getAvdeling_id() {
+    public Integer getAvdeling_id() {
         return avdeling_id;
     }
 
