@@ -29,25 +29,37 @@ public class Main {
 //        getAlleAnsatte(entityManager);
 
 
-        //Finner alle ansatte !!!!
+        //1) Finner alle ansatte !!!!
         List<Ansatt> liste = AnsattDAO.finnAlleAnsatte(entityManager);
-        System.out.println("Fetching all ansatte..");
+        System.out.println("Finner alle ansatte");
         for (Ansatt ansatt : liste) {
             System.out.println(ansatt);
         }
 
-        //Finner alle ansatte i en avdeling !!!!
-
-//        Avdeling avdeling = AvdelingDAO.finnAvdelingMedId(entityManager, 2);
-//        System.out.println(avdeling);
-//        System.out.println("Finner alle ansatte i avdelingen...");
-//        List<Ansatt> ansatte = AvdelingDAO.finnAlleAnsatte(entityManager, 2);
-//        for (Ansatt ans : ansatte) {
-//            System.out.println(ans);
-//        }
+        //2) Printer alle ansatte i en avdeling !!!!
 
         AvdelingDAO.printAnsatteWithHighlightedBoss(entityManager, 2);
-//
+
+
+
+        //3) Oppdatere hvilken avdeling en ansatt jobber på.
+
+        Ansatt ansatt = AnsattDAO.insertDummyAnsatt(entityManager);
+        System.out.println("Ansatt vi akkurat la til:");
+        System.out.println(ansatt);
+
+        ansatt.setFornavn("Ken William");
+        ansatt.setEtternavn("Austrheim");
+        ansatt.setAvdeling_id(3);
+
+        AnsattDAO.oppdaterAnsatt(entityManager, ansatt);
+        System.out.println("Oppdaterte ansatt:");
+
+        System.out.println(AnsattDAO.finnAnsatt(entityManager, ansatt.getAnsatt_id()));
+
+        //4) Lage en ny avdeling og tildele den en ansatt.
+
+
 //        ProsjektDeltagelse deltagelse = ProsjektDAO.leggTilAnsattTilProsjekt(entityManager, 1, 1);
 //
 //        System.out.println(deltagelse);

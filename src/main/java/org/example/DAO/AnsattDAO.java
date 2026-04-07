@@ -33,6 +33,7 @@ public class AnsattDAO {
         }
     }
 
+
     public void leggTilAnsatt(Ansatt ansatt) {
         EntityTransaction tx = em.getTransaction();
 
@@ -51,7 +52,7 @@ public class AnsattDAO {
         }
     }
 
-    public static void insertDummyAnsatt(EntityManager em) {
+    public static Ansatt insertDummyAnsatt(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
         try {
@@ -70,9 +71,11 @@ public class AnsattDAO {
 
             tx.commit();
             System.out.println("Ansatt inserted!");
+            return a;
         } catch (Exception e) {
             if (tx.isActive()) tx.rollback();
             e.printStackTrace();
+            return null;
         }
     }
     private static boolean harProsjektTimer(Ansatt ansatt){

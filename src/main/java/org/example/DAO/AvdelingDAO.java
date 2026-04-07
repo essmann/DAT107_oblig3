@@ -8,6 +8,9 @@ import org.example.Entity.Avdeling;
 import java.util.List;
 
 public class AvdelingDAO {
+    public static void leggTilAvdeling(EntityManager em, String navn, Ansatt sjef ) {
+        
+    }
     public static Avdeling finnAvdelingMedId(EntityManager em, int id){
             try{
                 Avdeling avdeling = em.find( Avdeling.class, id);
