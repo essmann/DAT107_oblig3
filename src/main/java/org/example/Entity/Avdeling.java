@@ -10,10 +10,18 @@ public class Avdeling {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int avdeling_id;
 
+    public int getAvdeling_id() {
+        return avdeling_id;
+    }
+
     private String navn;
 
     public String getNavn() {
         return navn;
+    }
+
+    public void setSjef(Ansatt sjef) {
+        this.sjef = sjef;
     }
 
     public void setNavn(String navn) {

@@ -1,6 +1,5 @@
 package org.example.DAO;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
@@ -12,34 +11,14 @@ import java.util.Date;
 import java.util.List;
 
 public class AnsattDAO {
-    private EntityManager em;
 
-    public AnsattDAO(EntityManager em) {
-        this.em = em;
-    }
-
-    public boolean erSjef(int ansattNr) {
-        try {
-            Long count = em.createQuery(
-                            "select count(p) from Avdeling p where p.sjef.ansatt_id = :ansattNr",
-                            Long.class)
-                    .setParameter("ansattNr", ansattNr)
-                    .getSingleResult();
-
-            return count > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-
-    public void leggTilAnsatt(Ansatt ansatt) {
+    // legg til ansatt
+    public static void leggTilAnsatt(EntityManager em, Ansatt ansatt) {
         EntityTransaction tx = em.getTransaction();
 
         try {
             if (ansatt.getAvdeling_id() == 0) {
-                throw new IllegalArgumentException("Ansatt har ikke en avdeling id.");
+                throw new IllegalArgumentException("ansatt må ha avdeling_id.");
             }
 
             tx.begin();
@@ -47,11 +26,133 @@ public class AnsattDAO {
             tx.commit();
 
         } catch (Exception e) {
-            if (tx.isActive()) tx.rollback(); // IMPORTANT
+            if (tx.isActive()) tx.rollback();
             e.printStackTrace();
         }
     }
 
+    // oppdater ansatt
+    public static void oppdaterAnsatt(EntityManager em, Ansatt ansatt) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            Ansatt eksisterende = em.find(Ansatt.class, ansatt.getAnsatt_id());
+            if (eksisterende == null) {
+                throw new IllegalArgumentException("ansatt finnes ikke");
+            }
+
+            // sjekk om ansatt er sjef
+            Long sjefCount = em.createQuery(
+                            "SELECT COUNT(a) FROM Avdeling a WHERE a.sjef.ansatt_id = :id",
+                            Long.class
+                    ).setParameter("id", ansatt.getAnsatt_id())
+                    .getSingleResult();
+
+            // hvis prøver å bytte avdeling og er sjef → stopp
+            if (sjefCount > 0 &&
+                    eksisterende.getAvdeling_id() != ansatt.getAvdeling_id()) {
+                throw new IllegalStateException("kan ikke endre avdeling for en sjef.");
+            }
+
+            eksisterende.setFornavn(ansatt.getFornavn());
+            eksisterende.setEtternavn(ansatt.getEtternavn());
+            eksisterende.setBrukernavn(ansatt.getBrukernavn());
+            eksisterende.setStilling(ansatt.getStilling());
+            eksisterende.setMaanedslonn(ansatt.getMaanedslonn());
+            eksisterende.setAnsettelsedato(ansatt.getAnsettelsedato());
+            eksisterende.setAvdeling_id(ansatt.getAvdeling_id());
+
+            tx.commit();
+
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        }
+    }
+
+    // finn ansatt på id
+    public static Ansatt finnAnsatt(EntityManager em, int id) {
+        return em.find(Ansatt.class, id);
+    }
+
+    // finn alle ansatte
+    public static List<Ansatt> finnAlleAnsatte(EntityManager em) {
+        TypedQuery<Ansatt> query =
+                em.createQuery("SELECT a FROM Ansatt a", Ansatt.class);
+        return query.getResultList();
+    }
+
+    // finn ansatt på brukernavn
+    public static Ansatt finnAnsattFraBrukernavn(EntityManager em, String brukernavn) {
+        try {
+            return em.createQuery(
+                            "SELECT a FROM Ansatt a WHERE a.brukernavn = :brukernavn",
+                            Ansatt.class
+                    ).setParameter("brukernavn", brukernavn)
+                    .getSingleResult();
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // slett ansatt
+    public static void slettAnsatt(EntityManager em, int id) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            Ansatt ansatt = em.find(Ansatt.class, id);
+            if (ansatt == null) {
+                throw new IllegalArgumentException("ansatt finnes ikke");
+            }
+
+            // sjekk om ansatt har prosjekt-timer
+            if (harProsjektTimer(ansatt)) {
+                throw new IllegalStateException("ansatt har prosjekt-timer.");
+            }
+
+            tx.begin();
+            em.remove(ansatt);
+            tx.commit();
+
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        }
+    }
+    // sett ny månedslønn på ansatt
+    public static void settLonn(EntityManager em, int ansattId, BigDecimal nyLonn) {
+        EntityTransaction tx = em.getTransaction();
+
+        try {
+            tx.begin();
+
+            Ansatt ansatt = em.find(Ansatt.class, ansattId);
+            if (ansatt == null) {
+                throw new IllegalArgumentException("ansatt finnes ikke");
+            }
+
+            ansatt.setMaanedslonn(nyLonn);
+
+            tx.commit();
+
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            e.printStackTrace();
+        }
+    }
+
+    // sjekk om ansatt har timer registrert
+    private static boolean harProsjektTimer(Ansatt ansatt) {
+        for (ProsjektDeltagelse p : ansatt.getProsjektDeltagelse()) {
+            if (p.getAntall_timer() > 0) return true;
+        }
+        return false;
+    }
+
+    // dummy insert for testing
     public static Ansatt insertDummyAnsatt(EntityManager em) {
         EntityTransaction tx = em.getTransaction();
 
@@ -65,173 +166,16 @@ public class AnsattDAO {
             a.setAnsettelsedato(new Date());
             a.setStilling("Utvikler");
             a.setMaanedslonn(new BigDecimal("50000"));
-            a.setAvdeling_id(1); // make sure this exists in DB
+            a.setAvdeling_id(1);
 
             em.persist(a);
 
             tx.commit();
-            System.out.println("Ansatt inserted!");
             return a;
+
         } catch (Exception e) {
             if (tx.isActive()) tx.rollback();
-            e.printStackTrace();
             return null;
         }
     }
-    private static boolean harProsjektTimer(Ansatt ansatt){
-        List<ProsjektDeltagelse> deltagelse = ansatt.getProsjektDeltagelse();
-
-        for (ProsjektDeltagelse p : deltagelse) {
-            int timer = p.getAntall_timer();
-            if(timer>0){
-                    return true;
-            }
-        }
-        return false;
-    }
-
-    public static void oppdaterAnsatt(EntityManager em, Ansatt ansatt) {
-        EntityTransaction tx = em.getTransaction();
-
-        try {
-            tx.begin();
-
-            // Hent eksisterende ansatt fra DB
-            Ansatt eksisterende = em.find(Ansatt.class, ansatt.getAnsatt_id());
-            if (eksisterende == null) {
-                throw new IllegalArgumentException("Ansatt finnes ikke");
-            }
-
-            // Sjekk om ansatt er sjef i en avdeling
-            Long sjefCount = em.createQuery(
-                            "SELECT COUNT(a) FROM Avdeling a WHERE a.sjef.ansatt_id = :ansattId", Long.class)
-                    .setParameter("ansattId", eksisterende.getAnsatt_id())
-                    .getSingleResult();
-
-            // Hvis prøver å endre avdeling og er sjef → kast feil
-            if (sjefCount > 0 && eksisterende.getAvdeling_id() != ansatt.getAvdeling_id()) {
-                throw new IllegalStateException("Kan ikke endre avdeling for en sjef.");
-            }
-
-            // Oppdater kun felt som er tillatt
-            eksisterende.setFornavn(ansatt.getFornavn());
-            eksisterende.setEtternavn(ansatt.getEtternavn());
-            eksisterende.setBrukernavn(ansatt.getBrukernavn());
-            eksisterende.setStilling(ansatt.getStilling());
-            eksisterende.setMaanedslonn(ansatt.getMaanedslonn());
-            eksisterende.setAnsettelsedato(ansatt.getAnsettelsedato());
-            eksisterende.setAvdeling_id(ansatt.getAvdeling_id()); // trykket her er OK hvis ikke sjef
-
-            tx.commit();
-        } catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
-            throw e;
-        }
-    }
-
-
-    public static Ansatt finnAnsatt(EntityManager em, int ansattNr){
-        try{
-            Ansatt ansatt = em.find(Ansatt.class, ansattNr);
-            return ansatt;
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-        finally{
-        }
-        return null;
-    }
-    public static List<Ansatt> finnAlleAnsatte(EntityManager em){
-        try{
-            TypedQuery<Ansatt> query = em.createQuery( "SELECT a from Ansatt a", Ansatt.class);
-            return query.getResultList();
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-        finally{
-        }
-        return null;
-    }
-    public static Ansatt finnAnsattFraBrukernavn(EntityManager em, String brukernavn){
-        try{
-            TypedQuery<Ansatt> query = em.createQuery(
-                    "SELECT p FROM Ansatt p WHERE p.brukernavn = :ansatt",
-                    Ansatt.class
-            );
-
-            query.setParameter("ansatt", brukernavn);
-            Ansatt ansatt = query.getSingleResult();
-            return ansatt;
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-        finally{
-        }
-        return null;
-    }
-
-    public static Ansatt slettAnsatt(EntityManager em, int ansattNr){
-            Ansatt ansatt = em.find(Ansatt.class, ansattNr);
-            if(ansatt == null) throw new IllegalArgumentException("Ansatt med id: " + ansattNr + " ikke funnet");
-            if(harProsjektTimer(ansatt)){
-                throw new IllegalStateException("Kan ikke slette ansatt fordi den har timer jobbet i et prosjekt.");
-
-            }
-        try {
-            em.getTransaction().begin();
-            em.remove(ansatt); // <-- Dette sletter faktisk raden!
-            em.getTransaction().commit();
-            return ansatt;
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback(); // Ruller tilbake hvis noe krasjer i DB
-            }
-            throw e; // Kaster feilen videre så vi vet at DB-slettingen feilet
-        }
-}
-    public static void insertDummyAnsatte(EntityManager em) {
-        EntityTransaction tx = em.getTransaction();
-        tx.begin();
-
-        Ansatt a1 = new Ansatt();
-        a1.setBrukernavn("jdoe");
-        a1.setFornavn("John");
-        a1.setEtternavn("Doe");
-        a1.setAnsettelsedato(new Date());
-        a1.setStilling("Utvikler");
-        a1.setMaanedslonn(new BigDecimal("50000"));
-        a1.setAvdeling_id(1);
-
-        Ansatt a2 = new Ansatt();
-        a2.setBrukernavn("aith");
-        a2.setFornavn("Anna");
-        a2.setEtternavn("Smith");
-        a2.setAnsettelsedato(new Date());
-        a2.setStilling("Designer");
-        a2.setMaanedslonn(new BigDecimal("48000"));
-        a2.setAvdeling_id(2);
-
-        Ansatt a3 = new Ansatt();
-        a3.setBrukernavn("bsen");
-        a3.setFornavn("Bjørn");
-        a3.setEtternavn("Jensen");
-        a3.setAnsettelsedato(new Date());
-        a3.setStilling("Prosjektleder");
-        a3.setMaanedslonn(new BigDecimal("60000"));
-        a3.setAvdeling_id(1);
-
-        em.persist(a1);
-        em.persist(a2);
-        em.persist(a3);
-
-        tx.commit();
-    }
-
-
-
-
-
 }

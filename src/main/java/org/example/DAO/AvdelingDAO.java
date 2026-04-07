@@ -8,20 +8,62 @@ import org.example.Entity.Avdeling;
 import java.util.List;
 
 public class AvdelingDAO {
-    public static void leggTilAvdeling(EntityManager em, String navn, Ansatt sjef ) {
-        
+    public static void leggTilAvdeling(EntityManager em, String navn, Ansatt sjef) {
+
+        Avdeling eksisterende = finnAvdelingMedAnsatt(em, sjef);
+
+        if (eksisterende != null && eksisterende.getSjef().equals(sjef)) {
+            throw new IllegalArgumentException("Denne ansatte er allerede sjef for en annen avdeling.");
+        }
+
+        em.getTransaction().begin();
+
+        // Hvis han er i en annen avdeling → fjern kobling
+        if (eksisterende != null) {
+            sjef.setAvdeling_id(null);
+        }
+
+        // Lag ny avdeling
+        Avdeling avdeling = new Avdeling();
+        avdeling.setNavn(navn);
+        avdeling.setSjef(sjef);
+
+        em.persist(avdeling);
+
+        //
+        sjef.setAvdeling_id(avdeling.getAvdeling_id());
+        em.merge(sjef);
+
+        em.getTransaction().commit();
     }
-    public static Avdeling finnAvdelingMedId(EntityManager em, int id){
-            try{
-                Avdeling avdeling = em.find( Avdeling.class, id);
-                return avdeling;
-            }
-            catch(Exception e){
-                e.printStackTrace();
-                return null;
-            }
+
+    // finn alle avdelinger
+    public static List<Avdeling> finnAlleAvdelinger(EntityManager em) {
+        return em.createQuery("SELECT a FROM Avdeling a", Avdeling.class)
+                .getResultList();
+    }
+
+    public static Avdeling finnAvdelingMedAnsatt(EntityManager em, Ansatt ansatt) {
+        try {
+            Avdeling avdeling = em.find(Avdeling.class, ansatt.getAvdeling_id());
+            return avdeling;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Avdeling finnAvdelingMedId(EntityManager em, int id) {
+        try {
+            Avdeling avdeling = em.find(Avdeling.class, id);
+            return avdeling;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
 
     }
+
     public static void printAnsatteWithHighlightedBoss(EntityManager em, int avdeling_id) {
         try {
             Avdeling avdeling = finnAvdelingMedId(em, avdeling_id);
@@ -51,14 +93,14 @@ public class AvdelingDAO {
             e.printStackTrace();
         }
     }
-    public static List<Ansatt> finnAlleAnsatte(EntityManager em, int avdeling_id){
-        try{
+
+    public static List<Ansatt> finnAlleAnsatte(EntityManager em, int avdeling_id) {
+        try {
             TypedQuery<Ansatt> query = em.createQuery("select p from Ansatt p where p.avdeling_id = :avdeling_id", Ansatt.class);
             query.setParameter("avdeling_id", avdeling_id);
 
             return query.getResultList();
-        }
-        catch(Exception e){
+        } catch (Exception e) {
 
             e.printStackTrace();
             return null;

@@ -109,12 +109,20 @@ public class Ansatt {
                 "\n}";
     }
 
+    @Override
+    public boolean equals(Object o){
+        if(o instanceof Ansatt){
+            return ((Ansatt) o).getAnsatt_id() == this.ansatt_id;
+        }
+        return false;
+
+    }
 
     public Integer getAvdeling_id() {
         return avdeling_id;
     }
 
-    public void setAvdeling_id(int avdeling_id) {
+    public void setAvdeling_id(Integer avdeling_id) {
         this.avdeling_id = avdeling_id;
     }
 
